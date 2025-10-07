@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
 import { config } from './config';
+import { swaggerSpec } from './config/swagger';
 import { NodeMetadataService } from './services/nodeMetadataService';
 import { createNodeTypesRouter } from './controllers/nodeTypesController';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler';
@@ -18,6 +20,22 @@ async function startServer() {
   app.use(logger);
 
   // Health check endpoint
+  /**
+   * @openapi
+   * /health:
+   *   get:
+   *     summary: Health check
+   *     description: Returns the health status of the API
+   *     tags:
+   *       - Health
+   *     responses:
+   *       200:
+   *         description: Service is healthy
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/HealthResponse'
+   */
   app.get('/health', (_req, res) => {
     res.json({
       status: 'ok',
@@ -41,18 +59,53 @@ async function startServer() {
 
   // API routes
   const apiRouter = express.Router();
+
+  // Swagger documentation
+  apiRouter.use('/docs', swaggerUi.serve);
+  apiRouter.get('/docs', swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'n8n Forge API Documentation',
+  }));
+
   apiRouter.use('/node-types', createNodeTypesRouter(nodeService));
 
   app.use(`/api/${config.apiVersion}`, apiRouter);
 
   // Root endpoint
+  /**
+   * @openapi
+   * /:
+   *   get:
+   *     summary: API information
+   *     description: Returns basic information about the API and available endpoints
+   *     tags:
+   *       - Health
+   *     responses:
+   *       200:
+   *         description: API information
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 name:
+   *                   type: string
+   *                 version:
+   *                   type: string
+   *                 description:
+   *                   type: string
+   *                 endpoints:
+   *                   type: object
+   */
   app.get('/', (_req, res) => {
     res.json({
       name: 'n8n-forge-api',
       version: '1.0.0',
       description: 'REST API for n8n node type metadata and validation',
+      documentation: `/api/${config.apiVersion}/docs`,
       endpoints: {
         health: '/health',
+        docs: `/api/${config.apiVersion}/docs`,
         nodeTypes: `/api/${config.apiVersion}/node-types`,
         categories: `/api/${config.apiVersion}/node-types/categories`,
         nodeDetails: `/api/${config.apiVersion}/node-types/:nodeType`,
@@ -73,7 +126,7 @@ async function startServer() {
     console.log('='.repeat(60));
     console.log(`📡 Server: http://localhost:${config.port}`);
     console.log(`🏥 Health: http://localhost:${config.port}/health`);
-    console.log(`📚 API Docs: http://localhost:${config.port}/`);
+    console.log(`📚 Swagger Docs: http://localhost:${config.port}/api/${config.apiVersion}/docs`);
     console.log(`🔌 Node Types: http://localhost:${config.port}/api/${config.apiVersion}/node-types`);
     console.log('='.repeat(60));
     console.log('');

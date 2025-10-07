@@ -43,7 +43,26 @@ pnpm start
 
 The API will be available at `http://localhost:3000` (or your configured PORT).
 
+**📚 View the interactive API documentation:** `http://localhost:3000/api/v1/docs`
+
 ## 📡 API Endpoints
+
+### 📚 Interactive API Documentation
+
+**Swagger UI available at `/api/v1/docs`**
+
+The API includes interactive Swagger documentation where you can explore and test all endpoints:
+
+```
+http://localhost:3000/api/v1/docs
+```
+
+The Swagger UI provides:
+- Complete API reference with all endpoints
+- Request/response schemas with examples
+- Interactive "Try it out" feature to test endpoints
+- Detailed parameter descriptions
+- Authentication requirements (if any)
 
 ### Root Endpoint
 
