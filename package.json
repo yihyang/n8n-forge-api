@@ -1,16 +1,48 @@
 {
   "name": "n8n-forge-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "REST API service for n8n node type metadata and validation",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist"
   },
-  "keywords": [],
+  "keywords": [
+    "n8n",
+    "workflow",
+    "automation",
+    "api"
+  ],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.18.1",
   "dependencies": {
-    "n8n": "^1.114.3"
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "morgan": "^1.10.0",
+    "n8n": "^1.114.3",
+    "n8n-core": "^1.114.0",
+    "n8n-workflow": "^1.112.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^20.10.0",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
   }
 }
