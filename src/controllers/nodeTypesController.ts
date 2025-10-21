@@ -1,15 +1,27 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { NodeMetadataService } from '../services/nodeMetadataService';
 import { Validator } from '../utils/validator';
+import { DeepValidator } from '../utils/deepValidator';
+import { ConnectionValidator } from '../services/connectionValidator';
+import { RequirementValidator } from '../services/requirementValidator';
 import { ApiError } from '../middleware/errorHandler';
 import { config } from '../config';
-import { NodeTypeFilters, ValidationRequest } from '../types';
+import {
+  NodeTypeFilters,
+  ValidationRequest,
+  DeepValidationRequest,
+  ConnectionValidationRequest,
+  RequirementValidationRequest
+} from '../types';
 
 export function createNodeTypesRouter(
   nodeService: NodeMetadataService
 ): Router {
   const router = Router();
   const validator = new Validator(nodeService);
+  const deepValidator = new DeepValidator(nodeService);
+  const connectionValidator = new ConnectionValidator(nodeService);
+  const requirementValidator = new RequirementValidator(nodeService);
 
   /**
    * @openapi
@@ -293,6 +305,189 @@ export function createNodeTypesRouter(
         }
 
         const result = await validator.validate(validationRequest);
+
+        res.json({
+          success: true,
+          data: result,
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  /**
+   * @openapi
+   * /api/v1/node-types/validate-parameters:
+   *   post:
+   *     summary: Deep parameter validation
+   *     description: Perform comprehensive validation of node parameters including constraints, ranges, patterns, and nested structures
+   *     tags:
+   *       - Validation
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - nodeType
+   *               - parameters
+   *             properties:
+   *               nodeType:
+   *                 type: string
+   *                 description: The full node type name
+   *                 example: n8n-nodes-base.httpRequest
+   *               typeVersion:
+   *                 type: number
+   *                 description: The node type version
+   *                 example: 1
+   *               parameters:
+   *                 type: object
+   *                 description: The parameters to validate
+   *     responses:
+   *       200:
+   *         description: Deep validation completed
+   *       400:
+   *         description: Invalid request
+   */
+  router.post(
+    '/validate-parameters',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const request: DeepValidationRequest = req.body;
+
+        if (!request.nodeType || !request.parameters) {
+          throw new ApiError(400, 'nodeType and parameters are required');
+        }
+
+        const result = await deepValidator.validateParameters(request);
+
+        res.json({
+          success: true,
+          data: result,
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  /**
+   * @openapi
+   * /api/v1/workflows/validate-connections:
+   *   post:
+   *     summary: Validate workflow connections
+   *     description: Validate node connections, data flow, and workflow structure
+   *     tags:
+   *       - Validation
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - workflow
+   *             properties:
+   *               workflow:
+   *                 type: object
+   *                 required:
+   *                   - nodes
+   *                 properties:
+   *                   nodes:
+   *                     type: array
+   *                     items:
+   *                       type: object
+   *                   connections:
+   *                     type: object
+   *     responses:
+   *       200:
+   *         description: Connection validation completed
+   *       400:
+   *         description: Invalid request
+   */
+  router.post(
+    '/validate-connections',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const request: ConnectionValidationRequest = req.body;
+
+        if (!request.workflow || !request.workflow.nodes) {
+          throw new ApiError(400, 'workflow with nodes array is required');
+        }
+
+        const result = await connectionValidator.validateConnections(request);
+
+        res.json({
+          success: true,
+          data: result,
+        });
+      } catch (error) {
+        next(error);
+      }
+    }
+  );
+
+  /**
+   * @openapi
+   * /api/v1/requirements/validate:
+   *   post:
+   *     summary: Validate workflow requirements
+   *     description: Pre-generation validation to check if requirements can be fulfilled with available nodes
+   *     tags:
+   *       - Validation
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - steps
+   *             properties:
+   *               steps:
+   *                 type: array
+   *                 items:
+   *                   type: object
+   *                   properties:
+   *                     description:
+   *                       type: string
+   *                     suggestedNodeType:
+   *                       type: string
+   *                     requiredInputs:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                     expectedOutputs:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                     requiresTrigger:
+   *                       type: boolean
+   *                     requiresWebhook:
+   *                       type: boolean
+   *                     requiresCredentials:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *     responses:
+   *       200:
+   *         description: Requirement validation completed
+   *       400:
+   *         description: Invalid request
+   */
+  router.post(
+    '/validate-requirements',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const request: RequirementValidationRequest = req.body;
+
+        if (!request.steps || !Array.isArray(request.steps)) {
+          throw new ApiError(400, 'steps array is required');
+        }
+
+        const result = await requirementValidator.validateRequirements(request);
 
         res.json({
           success: true,
