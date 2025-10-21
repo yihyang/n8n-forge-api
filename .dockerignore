@@ -1,0 +1,46 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.local
+
+# Tests
+tests
+*.test.ts
+*.test.js
+
+# Documentation
+README.md
+docs
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Scripts
+test-v4-endpoints.sh
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml

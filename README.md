@@ -32,6 +32,21 @@ cp .env.example .env
 
 ### Running the Server
 
+#### Option 1: Docker (Recommended for Production)
+
+```bash
+# Using Docker Compose (easiest)
+docker-compose up -d
+
+# Or using Docker directly
+docker build -t n8n-forge-api .
+docker run -p 3000:3000 n8n-forge-api
+```
+
+See [docs/DOCKER.md](docs/DOCKER.md) for complete Docker deployment guide.
+
+#### Option 2: Node.js (Development)
+
 ```bash
 # Development mode with hot reload
 pnpm dev
