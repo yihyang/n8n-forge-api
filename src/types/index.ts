@@ -124,3 +124,117 @@ export interface CacheEntry<T> {
   timestamp: number;
   ttl: number;
 }
+
+/**
+ * Deep parameter validation request
+ */
+export interface DeepValidationRequest {
+  nodeType: string;
+  typeVersion?: number;
+  parameters: Record<string, any>;
+}
+
+/**
+ * Parameter constraint violation
+ */
+export interface ParameterConstraintError extends ValidationError {
+  parameterPath: string;
+  constraint: string;
+  expectedValue?: any;
+  actualValue?: any;
+  suggestion?: string;
+}
+
+/**
+ * Deep validation response with detailed parameter errors
+ */
+export interface DeepValidationResponse {
+  valid: boolean;
+  errors: ParameterConstraintError[];
+  warnings: ParameterConstraintError[];
+  suggestions: string[];
+}
+
+/**
+ * Workflow connection validation request
+ */
+export interface ConnectionValidationRequest {
+  workflow: {
+    nodes: Array<{
+      id?: string;
+      name: string;
+      type: string;
+      typeVersion?: number;
+      parameters?: Record<string, any>;
+      position?: [number, number];
+    }>;
+    connections?: Record<string, Record<string, Array<Array<{ node: string; type: string; index: number }>>>>;
+  };
+}
+
+/**
+ * Connection validation error
+ */
+export interface ConnectionError {
+  sourceNode: string;
+  targetNode: string;
+  message: string;
+  severity: 'error' | 'warning';
+  suggestion?: string;
+}
+
+/**
+ * Connection validation response
+ */
+export interface ConnectionValidationResponse {
+  valid: boolean;
+  errors: ConnectionError[];
+  warnings: ConnectionError[];
+  dataFlowIssues: Array<{
+    node: string;
+    field: string;
+    message: string;
+  }>;
+}
+
+/**
+ * Pre-generation requirement validation request
+ */
+export interface RequirementValidationRequest {
+  steps: Array<{
+    description: string;
+    suggestedNodeType?: string;
+    requiredInputs?: string[];
+    expectedOutputs?: string[];
+    requiresTrigger?: boolean;
+    requiresWebhook?: boolean;
+    requiresCredentials?: string[];
+  }>;
+}
+
+/**
+ * Requirement feasibility result
+ */
+export interface RequirementFeasibility {
+  stepIndex: number;
+  feasible: boolean;
+  suggestedNodeType?: string;
+  alternativeNodes?: Array<{
+    nodeType: string;
+    displayName: string;
+    matchScore: number;
+    reason: string;
+  }>;
+  issues?: string[];
+  missingCapabilities?: string[];
+}
+
+/**
+ * Requirement validation response
+ */
+export interface RequirementValidationResponse {
+  overallFeasible: boolean;
+  stepResults: RequirementFeasibility[];
+  suggestions: string[];
+  warnings: string[];
+}
